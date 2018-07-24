@@ -1,0 +1,201 @@
+﻿@{
+    ViewBag.Title = "Consulta de ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<script type="text/javascript">
+    var exibirmodalmsg = function () {
+        $("#meumodal").modal("show");
+    };
+
+    var exibirmodalteste = function () {
+        $("#meumodal").modal("show");
+    };
+
+    var exibirDadosEdicao = function (model) {
+
+        $("#txtcodigo").val(model.IdCliente);
+        $("#txtnome").val(model.Nome);
+        $("#txtemail").val(model.Email);
+
+    };
+
+    var exibirDadosExclusao = function (model) {
+
+        $("#codigo").html(model.IdCliente);
+        $("#nome").html(model.Nome);
+        $("#email").html(model.Email);
+
+    };
+
+    $(document).ready(
+        function () {
+           
+            var consultarClientes = function () {
+                $("#meumodal").modal("show");
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Cliente/ConsultarClientes",
+                    data: {},
+                    success: function (lista) {
+                        var conteudo = "";
+                        $.each(lista, function (cont, cli) {
+                            conteudo += "<tr>";
+                            conteudo += "<td>" + cli.IdCliente + "</td>";
+                            conteudo += "<td>" + cli.Nome + "</td>";
+                            conteudo += "<td>" + cli.Email + "</td>";
+
+                            var model = JSON.stringify(cli);
+
+                            conteudo += "<td>";
+                            conteudo += "<button onclick='exibirDadosEdicao(" + model + ")' class='btn btn-primary' data-target='#janelaedicao' data-toggle='modal'>Atualizar</button>";
+                            conteudo += "&nbsp;";
+                            conteudo += "<button onclick='exibirDadosExclusao(" + model + ")' class='btn btn-danger' data-target='#janelaexclusao' data-toggle='modal'>Excluir</button>";
+                            conteudo += "</td>";
+
+                            conteudo += "</tr>";
+                        });
+
+                        $("#tabela tbody").html(conteudo);
+                        $("#quantidade").html(lista.length);
+
+                        $("#meumodal").modal("hide");
+
+                    },
+                    error: function (e) {
+                        $("#mensagem").html("Ocorreu um erro: " + e.status);
+                    }
+                });
+            };
+
+
+
+            $("#btnexclusao").click(
+                function () {
+
+                    $.ajax(
+                        {
+                            type: "POST",
+                            url: "/Cliente/ExcluirCliente",
+                            data: "id=" + $("#codigo").html(),
+                            success: function (msg) {
+
+                                $("#mensagem").html(msg);
+
+                                consultarClientes();
+                            },
+                            error: function (e) {
+                                $("#mensagem").html("Erro: " + e.status);
+                            }
+                        }
+                    );
+                }
+            );
+
+            $("#btnedicao").click(
+                function () {
+
+                    var model = {
+                        IdCliente: $("#txtcodigo").val(),
+                        Nome: $("#txtnome").val(),
+                        Email: $("#txtemail").val()
+                    };
+
+                    $.ajax(
+                        {
+                            type: "POST",
+                            url: "/Cliente/AtualizarCliente",
+                            data: model,
+                            success: function (msg) {
+
+                                $("#mensagem").html(msg);
+
+                                consultarClientes();
+                            },
+                            error: function (e) {
+                                $("#mensagem").html("Erro: " + e.status);
+                            }
+                        }
+                    );
+                }
+            );
+
+            consultarClientes();
+        }
+    );
+</script>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 col-lg-offset-2">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Para cadastrar um cliente preencha os dados abaixo.
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <table id="tabela" class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nome do Cliente</th>
+                                        <th>Email</th>
+                                        <th>Operações</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4">
+                                            Quantidade de clientes: <span id="quantidade"></span>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <!-- Janela de Exclusão -->
+                            @Html.Partial("_Exclusao")
+
+                            <!-- Janela de Edição -->
+                            @Html.Partial("_Edicao")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="meumodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel"></h4>
+            </div>
+            <div class="modal-body">
+                <h4 id="mensagem">Carregando informações aguarde...</h4>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.modal -->
+
+<!-- Modal -->
+<div class="modal fade" id="mensagem" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel"></h4>
+            </div>
+            <div class="modal-body">
+                <h4 id="mensagem"></h4>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.modal -->

@@ -1,0 +1,102 @@
+﻿
+@{
+    ViewBag.Title = "Cadastro de Clientes";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#btncadastro').click(function () {
+            $.blockUI({
+                message: null,
+                css: {
+                    border: 'none',
+                    padding: '15px',
+                    backgroundColor: '#000',
+                    '-webkit-border-radius': '10px',
+                    '-moz-border-radius': '10px',
+                    opacity: .5,
+                    color: '#fff'
+                }
+            });
+
+            setTimeout($.unblockUI, 2000);
+        });
+    }); 
+    
+    $(document).ajaxStop(function () {
+        $('#ajaxProgress').hide();
+    });
+
+    $(document).ready(
+        function () {
+
+            $('#ajaxProgress').hide();
+
+            $("#btncadastro").click( 
+                function () {                 
+                    var dados = {
+                        Nome: $("#txtnome").val(),
+                        Email: $("#txtemail").val()
+                    };
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/Cliente/CadastrarCliente",
+                        data: dados, 
+                        success: function (msg) { 
+                            $("#mensagem").html(msg);
+                            $("#txtnome").val("");
+                            $("#txtemail").val("");
+                        },
+                        error: function (e) { 
+                            $("#mensagem").html("Ocorreu um erro: " + e.status);
+                        }
+                    });
+
+                }
+            );
+        }
+    );
+</script>
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 col-lg-offset-2">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Para cadastrar um cliente preencha os dados abaixo.
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group">
+                                <label>Nome do Cliente:</label>
+                                <input type="text" id="txtnome" class="form-control" placeholder="Digite o nome completo do cliente" />
+                                <p class=""></p>
+
+                            </div>
+                            <div class="form-group">
+                                <label>Endereço de Email:</label>
+                                <input type="text" id="txtemail" class="form-control" placeholder="Digite o endereço de e-mail do cliente" />
+                                <p class=""></p>
+
+                            </div>
+                            <div class="form-group">
+                                <button id="btncadastro" class="btn btn-success">
+                                    Cadastrar Cliente
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <p class="help-block" id="mensagem"></p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

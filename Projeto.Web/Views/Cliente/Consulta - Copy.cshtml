@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Projeto</title>
+
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
+    <script src="~/Scripts/jquery-1.9.1.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+
+    <script type="text/javascript">
+
+        $(document).ajaxStart(function () {
+            $('#ajaxProgress').show();
+        });
+        $(document).ajaxStop(function () {
+            $('#ajaxProgress').hide();
+        });
+
+        //funções para exibir os dados nas janelas..
+        var exibirDadosEdicao = function (model) {
+            
+            //mostrar os dados nos campos da modal de edição..
+            $("#txtcodigo").val(model.IdCliente);
+            $("#txtnome").val(model.Nome);
+            $("#txtemail").val(model.Email);
+
+        };
+
+        var exibirDadosExclusao = function (model) {
+            
+            //mostrar os dados nas labels da modal de edição..
+            $("#codigo").html(model.IdCliente);
+            $("#nome").html(model.Nome);
+            $("#email").html(model.Email);
+
+        };
+
+        $(document).ready( //quando a página for carregada..
+            function () { //faça..
+
+                $('#ajaxProgress').hide();
+
+                //criando uma função para consultar clientes..
+                var consultarClientes = function () {
+                    //chamada ajax ao servidor..
+                    $.ajax({
+                        type: "POST", //requisição ao servidor..
+                        url: "/Cliente/ConsultarClientes", //método..
+                        data: {}, //dados enviados (vazio)
+                        success: function (lista) {
+                            var conteudo = "";
+                            $.each(lista, function (cont, cli) {
+                                conteudo += "<tr>";
+                                    conteudo += "<td>" + cli.IdCliente + "</td>";
+                                    conteudo += "<td>" + cli.Nome + "</td>";
+                                    conteudo += "<td>" + cli.Email + "</td>";
+
+                                    //armazenar os dados do objeto cliente como um JSON..
+                                    //serializando 'cli' como um JSON..
+                                    var model = JSON.stringify(cli);
+
+                                    conteudo += "<td>";
+                                        conteudo += "<button onclick='exibirDadosEdicao("+model+")' class='btn btn-primary' data-target='#janelaedicao' data-toggle='modal'>Atualizar</button>";
+                                        conteudo += "&nbsp;";
+                                        conteudo += "<button onclick='exibirDadosExclusao("+model+")' class='btn btn-danger' data-target='#janelaexclusao' data-toggle='modal'>Excluir</button>";
+                                    conteudo += "</td>";
+
+                                conteudo += "</tr>";
+                            });
+
+                            $("#tabela tbody").html(conteudo);
+                            $("#quantidade").html(lista.length);
+                        },
+                        error: function (e) {
+                            $("#mensagem").html("Ocorreu um erro: " + e.status);
+                        }
+                    });
+                };
+
+
+
+                //evento para excluir o cliente..
+                $("#btnexclusao").click(
+                    function(){
+
+                        //chamada AJAX ao controller..
+                        $.ajax(
+                            {
+                                type: "POST",
+                                url: "/Cliente/ExcluirCliente",
+                                data: "id=" + $("#codigo").html(),
+                                success: function (msg) {
+
+                                    //exibir a mensagem do servidor..
+                                    $("#mensagem").html(msg);
+
+                                    consultarClientes(); //executando a consulta..
+                                },
+                                error: function (e) {
+                                    $("#mensagem").html("Erro: " + e.status);
+                                }
+                            }
+                        );
+                    }
+                );
+
+                //evento para atualizar o cliente..
+                $("#btnedicao").click(
+                    function () {
+
+                        //objeto JSON..
+                        var model = {
+                            IdCliente: $("#txtcodigo").val(),
+                            Nome: $("#txtnome").val(),
+                            Email: $("#txtemail").val()
+                        };
+
+                        $.ajax(
+                            {
+                                type: "POST",
+                                url: "/Cliente/AtualizarCliente",
+                                data: model,
+                                success: function (msg) {
+
+                                    $("#mensagem").html(msg);
+
+                                    consultarClientes();
+                                },
+                                error: function (e) {
+                                    $("#mensagem").html("Erro: " + e.status);
+                                }
+                            }
+                        );
+                    }
+                );
+
+
+                //executando a função..
+                consultarClientes();
+            }
+        );
+    </script>
+
+</head>
+<body class="container">
+
+    <h2>Consulta de Clientes</h2>
+    <a href="/Home/Index">Voltar</a> para a página inicial.
+    <hr />
+
+    <span id="mensagem"></span>
+
+    <div id="ajaxProgress" class="alert alert-success">
+        Enviando requisição, por favor aguarde...
+    </div>
+
+    <table id="tabela" class="table table-hover">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nome do Cliente</th>
+                <th>Email</th>
+                <th>Operações</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4">
+                    Quantidade de clientes: <span id="quantidade"></span>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- Janela de Exclusão -->
+    @Html.Partial("_Exclusao")
+
+    <!-- Janela de Edição -->
+    @Html.Partial("_Edicao")
+
+</body>
+</html>

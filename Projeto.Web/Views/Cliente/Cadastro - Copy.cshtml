@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Projeto</title>
+
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
+    <script src="~/Scripts/jquery-1.9.1.min.js"></script>
+    <script src="~/js/jquery.blockUI.js"></script>
+
+    <script type="text/javascript">
+
+
+
+        $(document).ready(function () {
+            $('#btncadastro').click(function () {
+                $.blockUI({
+                    message: 'Por favor aguarde', 
+                    css: {
+                        border: 'none',
+                        padding: '15px',
+                        backgroundColor: '#000',
+                        '-webkit-border-radius': '10px',
+                        '-moz-border-radius': '10px',
+                        opacity: .5,
+                        color: '#fff'
+                    }
+                });
+
+                setTimeout($.unblockUI, 2000);
+            });
+        });
+
+
+
+        $(document).ajaxStop(function () {
+            $('#ajaxProgress').hide();
+        });
+
+        $(document).ready( //evento executado quando a pagina carregar..
+            function () { //faça..
+
+                $('#ajaxProgress').hide();
+
+                //evento no botão de cadastro..
+                $("#btncadastro").click( //quando o botão for clicado..
+                    function () { //faça..
+
+                        //resgatar os dados dos campos..
+                        //JSON -> Javascript Object Notation
+                        var dados = {
+                            Nome: $("#txtnome").val(),
+                            Email: $("#txtemail").val()
+                        };
+
+                        //fazendo uma chamada ao controller...
+                        $.ajax({
+                            type: "POST", //requisição ao servidor..
+                            url: "/Cliente/CadastrarCliente", //método..
+                            data: dados, //enviando o JSON para o controller..
+                            success: function (msg) { //requisição bem-sucedida
+                                //imprimir a mensagem..
+                                $("#mensagem").html(msg);
+                                //limpar os campos..
+                                $("#txtnome").val("");
+                                $("#txtemail").val("");
+                            },
+                            error: function (e) { //falha na requisição
+                                //imprimir o erro..
+                                $("#mensagem").html("Ocorreu um erro: " + e.status);
+                            }
+                        });
+
+                    }
+                );
+            }
+        );
+    </script>
+
+</head>
+<body class="container">
+
+    <h2>Cadastro de Clientes</h2>
+    <a href="/Home/Index">Voltar</a> para a página inicial.
+    <hr/>
+
+    <div class="row">
+        <div class="col-md-4">          
+            <label>Nome do Cliente:</label>
+            <input type="text" id="txtnome" class="form-control"
+                   placeholder="Digite aqui"/>
+            <br/>
+
+            <label>Endereço de Email:</label>
+            <input type="text" id="txtemail" class="form-control"
+                   placeholder="Digite aqui" />
+            <br />
+
+            <button id="btncadastro" class="btn btn-success">
+                Cadastrar Cliente
+            </button>
+            <br />
+            <br />
+
+            <span id="mensagem"></span>
+
+        </div>
+    </div>
+
+</body>
+</html>
+
+
+
